@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Web;
 using FluentSecurity.SampleApplication.Controllers;
 using FluentSecurity.SampleApplication.Models;
@@ -8,6 +11,8 @@ namespace FluentSecurity.SampleApplication
 	{
 		public static ISecurityConfiguration SetupFluentSecurity()
 		{
+			Log.RuntimeEventListener = e => Trace.WriteLine(String.Format("{0} - {1}{2}", e.RequestId, e.Message, e.CompletedInMilliseconds != null ? " (" + e.CompletedInMilliseconds + "ms)" : ""));
+			GlimpseTraceSetup.Register();
 			SecurityConfigurator.Configure(configuration =>
 			{
 				configuration.GetAuthenticationStatusFrom(Helpers.SecurityHelper.UserIsAuthenticated);
