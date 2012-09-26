@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Web;
+using FluentSecurity.Caching;
+using FluentSecurity.Policy;
 using FluentSecurity.SampleApplication.Controllers;
 using FluentSecurity.SampleApplication.Models;
 
@@ -11,7 +13,7 @@ namespace FluentSecurity.SampleApplication
 	{
 		public static ISecurityConfiguration SetupFluentSecurity()
 		{
-			Log.RuntimeEventListener = e => Trace.WriteLine(String.Format("{0} - {1}{2}", e.RequestId, e.Message, e.CompletedInMilliseconds != null ? " (" + e.CompletedInMilliseconds + "ms)" : ""));
+			Log.RuntimeEventListener = e => Trace.WriteLine(String.Format("{0} - {1}{2}", e.ContextId, e.Message.Replace(". ", Environment.NewLine), e.CompletedInMilliseconds != null ? " (" + e.CompletedInMilliseconds + "ms)" : ""));
 			GlimpseTraceSetup.Register();
 			SecurityConfigurator.Configure(configuration =>
 			{
@@ -21,7 +23,8 @@ namespace FluentSecurity.SampleApplication
 				configuration.DefaultPolicyViolationHandlerIs(() => new DefaultPolicyViolationHandler());
 				configuration.Advanced.ModifySecurityContext(context => context.Data.QueryString = HttpContext.Current.Request.QueryString);
 
-				configuration.For<HomeController>().Ignore();
+				configuration.For<HomeController>().Ignore().Cache<IgnorePolicy>(Cache.PerHttpSession);
+				configuration.For<HomeController>(x => x.About()).Ignore().Cache<IgnorePolicy>(Cache.DoNotCache, By.Controller);
 
 				configuration.For<AccountController>(x => x.LogInAsAdministrator()).DenyAuthenticatedAccess();
 				configuration.For<AccountController>(x => x.LogInAsPublisher()).DenyAuthenticatedAccess();

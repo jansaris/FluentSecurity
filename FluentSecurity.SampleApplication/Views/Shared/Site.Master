@@ -14,8 +14,9 @@
 	<div id="Header">
 		<div id="Branding">Fluent Security sample app</div>
 		<ul id="Main-Navigation">
-			<li><a href="/">Home</a></li>
-			
+			<%= Html.NavigationLink(Url.Action<HomeController>(x => x.Index()), "Home", "li") %>
+			<%= Html.NavigationLink(Url.Action<HomeController>(x => x.About()), "About", "li") %>
+			<%= Html.NavigationLink(Url.Action<HomeController>(x => x.Index()), "Home", "li") %>
 		</ul>
 	</div>
 	<div id="Content">

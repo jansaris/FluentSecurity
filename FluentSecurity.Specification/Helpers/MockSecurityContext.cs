@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Web.Routing;
@@ -14,9 +15,12 @@ namespace FluentSecurity.Specification.Helpers
 			_isAuthenticated = isAuthenticated;
 			_roles = roles;
 
+			Id = Guid.NewGuid();
 			Data = new ExpandoObject();
 			Data.RouteValues = routeValues;
 		}
+
+		public Guid Id { get; private set; }
 
 		public dynamic Data { get; private set; }
 

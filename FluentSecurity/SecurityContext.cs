@@ -8,18 +8,25 @@ namespace FluentSecurity
 {
 	public class SecurityContext : ISecurityContext
 	{
+		private readonly Guid _id;
 		private readonly ExpandoObject _data;
 		private readonly Func<bool> _isAuthenticated;
 		private readonly Func<IEnumerable<object>> _roles;
 
 		private SecurityContext(ConfigurationExpression configurationExpression)
 		{
+			_id = Guid.NewGuid();
 			_data = new ExpandoObject();
 			_isAuthenticated = configurationExpression.IsAuthenticated;
 			_roles = configurationExpression.Roles;
 
 			var modifyer = configurationExpression.Advanced.SecurityContextModifyer;
 			if (modifyer != null) modifyer.Invoke(this);
+		}
+
+		public Guid Id
+		{
+			get { return _id; }
 		}
 
 		public dynamic Data

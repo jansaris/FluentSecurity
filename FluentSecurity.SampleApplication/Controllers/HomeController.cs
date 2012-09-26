@@ -13,5 +13,10 @@ namespace FluentSecurity.SampleApplication.Controllers
 			};
 			return View(outModel);
 		}
+
+		public ActionResult About()
+		{
+			return View();
+		}
 	}
 }

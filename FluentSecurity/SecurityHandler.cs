@@ -12,25 +12,25 @@ namespace FluentSecurity
 	{
 		public static Action<SecurityRuntimeEvent> RuntimeEventListener;
 
-		public static void RuntimeEvent(Func<string> message, Guid requestId)
+		public static void RuntimeEvent(Func<string> message, ISecurityContext securityContext)
 		{
-			RuntimeEvent(e => e.Message = message.Invoke(), requestId);
+			RuntimeEvent(e => e.Message = message.Invoke(), securityContext);
 		}
 
-		public static void RuntimeEvent(Action<SecurityRuntimeEvent> @event, Guid requestId)
+		public static void RuntimeEvent(Action<SecurityRuntimeEvent> @event, ISecurityContext securityContext)
 		{
 			if (RuntimeEventListener != null)
 			{
 				var runtimeEvent = new SecurityRuntimeEvent
 				{
-					RequestId = requestId
+					ContextId = securityContext.Id
 				};
 				@event.Invoke(runtimeEvent);
 				RuntimeEventListener.Invoke(runtimeEvent);
 			}
 		}
 
-		public static void TimingOf(Action action, Func<string> message, Guid requestId)
+		public static void TimingOf(Action action, Func<string> message, ISecurityContext securityContext)
 		{
 			if (RuntimeEventListener != null)
 			{
@@ -42,11 +42,11 @@ namespace FluentSecurity
 				{
 					e.Message = message.Invoke();
 					e.CompletedInMilliseconds = stopwatch.ElapsedMilliseconds;
-				}, requestId);
+				}, securityContext);
 			} else action.Invoke();
 		}
 
-		public static TResult TimingOf<TResult>(Func<TResult> action, Func<string> message, Guid requestId)
+		public static TResult TimingOf<TResult>(Func<TResult> action, Func<string> message, ISecurityContext securityContext)
 		{
 			if (RuntimeEventListener != null)
 			{
@@ -58,7 +58,7 @@ namespace FluentSecurity
 				{
 					e.Message = message.Invoke();
 					e.CompletedInMilliseconds = stopwatch.ElapsedMilliseconds;
-				}, requestId);
+				}, securityContext);
 				return result;
 			}
 			return action.Invoke();
@@ -67,7 +67,7 @@ namespace FluentSecurity
 
 	public class SecurityRuntimeEvent
 	{
-		public Guid RequestId { get; set; }
+		public Guid ContextId { get; set; }
 		public string Message { get; set; }
 		public long? CompletedInMilliseconds { get; set; }
 	}
@@ -80,8 +80,7 @@ namespace FluentSecurity
 			if (actionName.IsNullOrEmpty()) throw new ArgumentException("Actionname must not be null or empty", "actionName");
 			if (securityContext == null) throw new ArgumentNullException("securityContext", "Security context must not be null");
 
-			var requestId = Guid.NewGuid();
-			Log.RuntimeEvent(() => "Handling security for {0} action {1}.".FormatWith(controllerName, actionName), requestId);
+			Log.RuntimeEvent(() => "Handling security for {0} action {1}.".FormatWith(controllerName, actionName), securityContext);
 
 			var configuration = ServiceLocator.Current.Resolve<ISecurityConfiguration>();
 			
@@ -90,25 +89,25 @@ namespace FluentSecurity
 			{
 				var results = Log.TimingOf(
 					() => policyContainer.EnforcePolicies(securityContext),
-					() => "Enforcing policies.", requestId);
+					() => "Enforced all policies.", securityContext);
 
 				if (results.Any(x => x.ViolationOccured))
 				{
 					var result = results.First(x => x.ViolationOccured);
-					Log.RuntimeEvent(() => "Policy violation occured! {0}.".FormatWith(result.PolicyType.FullName), requestId);
+					Log.RuntimeEvent(() => "Policy violation occured! {0}.".FormatWith(result.PolicyType.FullName), securityContext);
 					var policyViolationException = new PolicyViolationException(result);
 					var violationHandlerSelector = ServiceLocator.Current.Resolve<IPolicyViolationHandlerSelector>();
 					var matchingHandler = violationHandlerSelector.FindHandlerFor(policyViolationException) ?? new ExceptionPolicyViolationHandler();
-					Log.RuntimeEvent(() => "Handling policy violation with {0}.".FormatWith(matchingHandler.GetType().FullName), requestId);
+					Log.RuntimeEvent(() => "Handling policy violation with {0}.".FormatWith(matchingHandler.GetType().FullName), securityContext);
 					return matchingHandler.Handle(policyViolationException);
 				}
-				Log.RuntimeEvent(() => "Success! All policies were met.", requestId);
+				Log.RuntimeEvent(() => "Success! All policies were met.", securityContext);
 				return null;
 			}
 
 			if (configuration.Advanced.ShouldIgnoreMissingConfiguration)
 			{
-				Log.RuntimeEvent(() => "Missing configuration. Ignored.", requestId);
+				Log.RuntimeEvent(() => "Missing configuration. Ignored.", securityContext);
 				return null;
 			}
 

@@ -54,13 +54,22 @@ namespace FluentSecurity
 			{
 				var strategy = GetExecutionCacheStrategyForPolicy(policy, defaultResultsCacheLifecycle);
 				var cacheKey = PolicyResultCacheKeyBuilder.CreateFromStrategy(strategy, policy, context);
-				
-				var result = cache.Get<PolicyResult>(cacheKey, strategy.CacheLifecycle.ToLifecycle());
-				if (result == null)
+
+				var wasCashed = false;
+				PolicyResult result = null;
+				Log.TimingOf(() =>
 				{
-					result = policy.Enforce(context);
-					cache.Store(result, cacheKey, strategy.CacheLifecycle.ToLifecycle());
-				}
+					result = cache.Get<PolicyResult>(cacheKey, strategy.CacheLifecycle.ToLifecycle());
+					if (result == null)
+					{
+						result = policy.Enforce(context);
+						cache.Store(result, cacheKey, strategy.CacheLifecycle.ToLifecycle());
+					}
+					else wasCashed = true;
+				},
+				() => "Enforced policy {0} - {5}! {4} {1} at {2} with key '{3}'.".FormatWith(strategy.PolicyType, strategy.CacheLifecycle, strategy.CacheLevel, cacheKey, wasCashed ? "Result was cached:" : "Cache:", result.ViolationOccured ? "Violated" : "Success"),
+				context);
+
 				results.Add(result);
 				
 				if (result.ViolationOccured) break;
