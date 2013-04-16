@@ -82,9 +82,19 @@ namespace FluentSecurity
 					BindingFlags.Public |
 					BindingFlags.Instance
 				)
-				.Where(x => typeof(ActionResult).IsAssignableFrom(x.ReturnType) || typeof(Task<ActionResult>).IsAssignableFrom(x.ReturnType))
+				.Where(methodInfo => methodInfo.ReturnType.IsControllerActionReturnType())
 				.Where(action => actionFilter.Invoke(new ControllerActionInfo(controllerType, action)))
 				.ToList();
+		}
+
+		/// <summary>
+		/// Returns true if the type matches a controller action return type.
+		/// </summary>
+		/// <param name="returnType"></param>
+		/// <returns></returns>
+		internal static bool IsControllerActionReturnType(this Type returnType)
+		{
+			return typeof (ActionResult).IsAssignableFrom(returnType) || typeof (Task<ActionResult>).IsAssignableFromGenericType(returnType);
 		}
 
 		/// <summary>

@@ -5,10 +5,12 @@
 - ( **Fixed** ) Fixed issue with invariant culture (thanks to tsvayer).
 - ( **Fixed** ) Fixed issue with RequireRolePolicy and RequireAllRolesPolicy resolving roles 3 times/execution.
 - ( **Fixed** ) Fixed spelling of ISecurityContext methods (thanks to MariusSchulz).
+- ( **Fixed** ) Made the constructor of PolicyViolationException public to enable unit testing of violation handlers.
 - ( **Removed** ) Removed RemovePoliciesFor from ConfigurationExpression. Use RemovePolicy on IPolicyContainer and IConventionPolicyContainer.
 - ( **Removed** ) Removed PolicyViolationException\<TSecurityPolicy\> as exceptions should be created based on PolicyResult.
 - ( **Removed** ) Removed PolicyExecutionMode and changed the default policy execution behavior to "stop on first violation".
 - ( **Removed** ) Removed PolicyAppender property from IPolicyContainer interface as it's not really useful to anyone.
+- ( **Change** ) HandleSecurityAttribute now implements IAuthorizationFilter instead of inheriting from ActionFilterAttribute.
 - ( **Change** ) Created RequireAnyRolePolicy and marked RequireRolePolicy as deprecated.
 - ( **Change** ) Created RequireAnyRole extension and marked RequireRole extension as deprecated.
 - ( **Change** ) Moved IgnoreMissingConfiguration option to Advanced property.
@@ -26,6 +28,7 @@
 - ( **New** ) Added support for using AllowAny to add an IgnorePolicy.
 - ( **New** ) Added support for using ActionNameAttribute (thanks to Chandu).
 - ( **New** ) Added HttpUnauthorizedPolicyViolationHandler for returning standard mvc HttpUnauthorizedResult.
+- ( **New** ) Added support for async controllers (thanks to jansaris).
 - ( **New** ) Added support for securing controllers based on inheritance - Base controllers (thanks to Ridermansb).
 - ( **New** ) Added support for securing controllers based on action name and controller type.
 - ( **New** ) Added support for asserting all controller action have been configured using AssertAllActionsAreConfigured (thanks to Chandu).
