@@ -52,6 +52,13 @@ namespace FluentSecurity.TestHelper
 			return expression;
 		}
 
+        public ExpectationExpression<TController> For<TController>(Expression<Func<TController, Task>> actionExpression)
+        {
+            var expression = new ExpectationExpression<TController>(actionExpression);
+            _expectationsExpressions.Add(expression);
+            return expression;
+        }
+
         public ExpectationExpression<TController, TResult> For<TController, TResult>(Expression<Func<TController, Task<TResult>>> actionExpression) where TResult : ActionResult
         {
             var expression = new ExpectationExpression<TController, TResult>(actionExpression);

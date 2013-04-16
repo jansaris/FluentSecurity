@@ -19,6 +19,11 @@ namespace FluentSecurity.TestHelper
 			return Expectations.For(actionExpression);
 		}
 
+        public ExpectationExpression Expect<TController>(Expression<Func<TController, Task>> actionExpression) where TController : IController
+        {
+            return Expectations.For(actionExpression);
+        }
+
         public ExpectationExpression Expect<TController>(Expression<Func<TController, Task<ActionResult>>> actionExpression) where TController : IController
         {
             return Expectations.For(actionExpression);
@@ -43,6 +48,11 @@ namespace FluentSecurity.TestHelper
 		{
 			return Expectations.For(actionExpression);
 		}
+
+        public ExpectationExpression Expect(Expression<Func<TController, Task>> actionExpression)
+        {
+            return Expectations.For(actionExpression);
+        }
 
         public ExpectationExpression Expect<TResult>(Expression<Func<TController, Task<TResult>>> actionExpression) where TResult : ActionResult
         {
